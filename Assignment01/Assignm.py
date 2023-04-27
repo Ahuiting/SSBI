@@ -18,7 +18,7 @@ def create_parser():
     return p.parse_args()
 
 
-def delta_score(tup, score_GC, score_AU, score_GU):
+def delta_score(tup):
     if tup in [('G', 'C'), ('C', 'G')]:
         return score_GC
     elif tup in [('A', 'U'), ('U', 'A')]:
@@ -29,7 +29,7 @@ def delta_score(tup, score_GC, score_AU, score_GU):
         return 0
 
 
-def DPmatrix(seq, min_loop_size, score_GC, score_AU, score_GU):
+def DPmatrix(seq):
     # initialize
     matrix = np.zeros((len(seq), len(seq)))
     # 4 cases
@@ -38,33 +38,49 @@ def DPmatrix(seq, min_loop_size, score_GC, score_AU, score_GU):
             i = j - l
             case1 = matrix[i + 1, j]
             case2 = matrix[i, j - 1]
-            if j - i >= min_loop_size + 1:
-                case3 = matrix[i + 1, j - 1] + delta_score((seq[i], seq[j]), score_GC, score_AU, score_GU)
-            else:
-                case3 = 0
-            if j - i >= 2:
-                case4_scores = []
-                for k in range(i + 1, j):
-                    case4_scores.append(matrix[i, k] + matrix[k + 1, j])
-                case4 = max(case4_scores)
-            else:
-                case4 = 0
+            case3 = matrix[i + 1, j - 1] + delta_score((seq[i], seq[j])) if j - i >= min_loop_len + 1 else 0
+
+            case4_scores = []
+            for k in range(i + 1, j):
+                case4_scores.append(matrix[i, k] + matrix[k + 1, j])
+            case4 = max(case4_scores) if case4_scores else 0
+
             matrix[i, j] = max(case1, case2, case3, case4)
 
     return matrix;
 
-def traceback()
+
+def traceback(i, j):
+    if i < j:
+        if matrix[i][j] == matrix[i + 1, j]:
+            traceback(i + 1, j)
+        elif matrix[i][j] == matrix[i, j - 1]:
+            traceback(i, j - 1)
+        elif j - i >= min_loop_len + 1 and matrix[i][j] == matrix[i + 1, j - 1] + delta_score((seq[i], seq[j])):
+            pairs.append((i, j))
+            traceback(i + 1, j - 1)
+        else:
+            for k in range(i + 1, j):
+                if matrix[i][j] == matrix[i, k] + matrix[k + 1, j]:
+                    traceback(i.k)
+                    traceback(k + 1, j)
 
 
 if __name__ == '__main__':
+
     args = create_parser()
     score_GC = args.score_GC
     score_AU = args.score_AU
     score_GU = args.score_GU
     min_loop_len = args.min_loop_length
+
     seq = ''
     for seq_record in SeqIO.parse(args.input, "fasta"):
         seq = str(seq_record.seq)
-    matrix = DPmatrix(seq, min_loop_len, score_GC, score_AU, score_GU)
+    matrix = DPmatrix(seq)
     df = pd.DataFrame(matrix, index=list(seq), columns=list(seq))
     print(df)
+
+    pairs = []
+    traceback(0, len(seq) - 1)
+    print(pairs)
