@@ -11,53 +11,60 @@ def create_parser():
     p = argparse.ArgumentParser(description=__doc__,
                                 formatter_class=argparse.RawDescriptionHelpFormatter)
     p.add_argument('-i', '--input', help='PATH_TO_FASTA_FILE')
-    p.add_argument('--min-loop-length', default=3, help='MIN-LOOP-LENGTH')
-    p.add_argument('--score-GC', default=3, help='SCORE-GC')
-    p.add_argument('--score-AU', default=2, help='SCORE-AU')
-    p.add_argument('--score-GU', default=1, help='SCORE-GU')
+    p.add_argument('--min-loop-length', type=int, default=3, help='MIN-LOOP-LENGTH')
+    p.add_argument('--score-GC', type=int, default=3, help='SCORE-GC')
+    p.add_argument('--score-AU', type=int, default=2, help='SCORE-AU')
+    p.add_argument('--score-GU', type=int, default=1, help='SCORE-GU')
+    return p.parse_args()
 
 
-def delta_score(tup):
+def delta_score(tup, score_GC, score_AU, score_GU):
     if tup in [('G', 'C'), ('C', 'G')]:
-        return 1
+        return score_GC
     elif tup in [('A', 'U'), ('U', 'A')]:
-        return 1
+        return score_AU
     elif tup in [('G', 'U'), ('U', 'G')]:
-        return 1
+        return score_GU
     else:
         return 0
 
 
-def DPmatrix(seq, min_loop_size):
+def DPmatrix(seq, min_loop_size, score_GC, score_AU, score_GU):
     # initialize
     matrix = np.zeros((len(seq), len(seq)))
     # 4 cases
-    for l in range(min_loop_size + 1, len(seq)):
+    for l in range(1, len(seq)):
         for j in range(l, len(seq)):
-            i = j - l;
-            case1 = matrix[i + 1, j];
-            case2 = matrix[i, j - 1];
-            case3 = matrix[i + 1, j - 1] + delta_score((seq[i], seq[j]));
-            if j - i > min_loop_size + 1:
-                case4_scores = []
-                for k in range(i + 1 + min_loop_size, j):
-                    case4_scores.append(matrix[i, k] + matrix[k + 1, j]);
-                case4 = max(case4_scores);
-                matrix[i, j] = max(case1, case2, case3, case4);
+            i = j - l
+            case1 = matrix[i + 1, j]
+            case2 = matrix[i, j - 1]
+            if j - i >= min_loop_size + 1:
+                case3 = matrix[i + 1, j - 1] + delta_score((seq[i], seq[j]), score_GC, score_AU, score_GU)
             else:
-                matrix[i, j] = max(case1, case2, case3);
+                case3 = 0
+            if j - i >= 2:
+                case4_scores = []
+                for k in range(i + 1, j):
+                    case4_scores.append(matrix[i, k] + matrix[k + 1, j])
+                case4 = max(case4_scores)
+            else:
+                case4 = 0
+            matrix[i, j] = max(case1, case2, case3, case4)
 
     return matrix;
 
-
-
+def traceback()
 
 
 if __name__ == '__main__':
     args = create_parser()
-    seq=''
-    for seq_record in SeqIO.parse('test.fasta', "fasta"):
+    score_GC = args.score_GC
+    score_AU = args.score_AU
+    score_GU = args.score_GU
+    min_loop_len = args.min_loop_length
+    seq = ''
+    for seq_record in SeqIO.parse(args.input, "fasta"):
         seq = str(seq_record.seq)
-    matrix=DPmatrix(seq,2)
+    matrix = DPmatrix(seq, min_loop_len, score_GC, score_AU, score_GU)
     df = pd.DataFrame(matrix, index=list(seq), columns=list(seq))
     print(df)
