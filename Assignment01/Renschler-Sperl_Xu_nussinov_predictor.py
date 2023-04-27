@@ -66,7 +66,26 @@ def traceback(i, j):
                     traceback(k + 1, j)
 
 
+def print_bracket_dot(seq, pairs):
+    output = ["." for i in range(len(seq))]
+    for pair in pairs:
+        list(pair).sort()
+        output[pair[0]] = '('
+        output[pair[1]] = ')'
+    return output
+
+
+def print_bqseq(seq, pairs):
+    output = ['\t'.join([str(i + 1), seq[i], str(0)]) for i in range(len(seq))]
+    for pair in pairs:
+        list(pair).sort()
+        output[pair[0]] = '\t'.join([str(pair[0] + 1), seq[pair[0]],str( pair[1])])
+        output[pair[1]] = '\t'.join([str(pair[1] + 1), seq[pair[1]],str( pair[0])])
+    return '\n'.join(output)
+
+
 if __name__ == '__main__':
+    'try -i test.fasta --min-loop-length 3 --score-GC 1 --score-AU 1 --score-GU 1'
 
     args = create_parser()
     score_GC = args.score_GC
@@ -84,3 +103,6 @@ if __name__ == '__main__':
     pairs = []
     traceback(0, len(seq) - 1)
     print(pairs)
+
+    print(print_bracket_dot(seq, pairs))
+    print(print_bqseq(seq, pairs))
