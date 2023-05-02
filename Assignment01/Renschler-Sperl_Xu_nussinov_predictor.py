@@ -1,6 +1,5 @@
-# Author: Huiting Xu
+# Author: Huiting Xu and Desirée Renschler-Sper
 import argparse
-
 import pandas as pd
 from Bio import SeqIO
 import numpy as np
@@ -62,7 +61,7 @@ def traceback(i, j):
         else:
             for k in range(i + 1, j):
                 if matrix[i][j] == matrix[i, k] + matrix[k + 1, j]:
-                    traceback(i.k)
+                    traceback(i, k)
                     traceback(k + 1, j)
 
 
@@ -72,29 +71,30 @@ def print_bracket_dot(seq, pairs):
         list(pair).sort()
         output[pair[0]] = '('
         output[pair[1]] = ')'
-    return output
+    return ''.join(output)
 
 
 def print_bqseq(seq, pairs):
     output = ['\t'.join([str(i + 1), seq[i], str(0)]) for i in range(len(seq))]
     for pair in pairs:
         list(pair).sort()
-        output[pair[0]] = '\t'.join([str(pair[0] + 1), seq[pair[0]],str( pair[1])])
-        output[pair[1]] = '\t'.join([str(pair[1] + 1), seq[pair[1]],str( pair[0])])
+        output[pair[0]] = '\t'.join([str(pair[0] + 1), seq[pair[0]], str(pair[1] + 1)])
+        output[pair[1]] = '\t'.join([str(pair[1] + 1), seq[pair[1]], str(pair[0] + 1)])
     return '\n'.join(output)
 
 
 if __name__ == '__main__':
-    'try -i test.fasta --min-loop-length 3 --score-GC 1 --score-AU 1 --score-GU 1'
+    'try -i test.fasta --min-loop-length 5 --score-GC 10 --score-AU 5 --score-GU 2'
 
     args = create_parser()
     score_GC = args.score_GC
     score_AU = args.score_AU
     score_GU = args.score_GU
     min_loop_len = args.min_loop_length
+    file = args.input
 
     seq = ''
-    for seq_record in SeqIO.parse(args.input, "fasta"):
+    for seq_record in SeqIO.parse(file, "fasta"):
         seq = str(seq_record.seq)
     matrix = DPmatrix(seq)
     df = pd.DataFrame(matrix, index=list(seq), columns=list(seq))
@@ -106,3 +106,9 @@ if __name__ == '__main__':
 
     print(print_bracket_dot(seq, pairs))
     print(print_bqseq(seq, pairs))
+
+    with open(file[:-6] + ".bpseq", "w") as f:
+        f.write("Filename: " + file + "\nMin-loop: " + str(min_loop_len) + "\nGC: " + str(score_GC) + "\nAU: " + str(
+            score_AU) + "\nGU: " + str(score_GU) + "\nScore: " + str(matrix[0][len(seq) - 1]))
+        f.write("\n" + print_bqseq(seq, pairs))
+        f.write("\n" + print_bracket_dot(seq, pairs))
