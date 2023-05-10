@@ -1,5 +1,6 @@
 # Author: Huiting Xu and Desirée Renschler-Sperl
 import argparse
+import os
 
 from Bio.PDB import *
 import numpy as np
@@ -76,20 +77,19 @@ def get_phi_psi_list(atom_dict):
 
 
 if __name__ == '__main__':
-    'try -i 5ire.pdb 1igt.pdb -o RamachandranMap.pdf'
+    'try -i 5ire.pdb 1igt.pdb -o RamachandranMaps'
     args = create_parser()
     file_list = args.input
-    phi_total = []
-    psi_total = []
+    if not os.path.isdir(args.output):
+        os.mkdir(args.output)
     for file in file_list:
         phi_list, psi_list = get_phi_psi_list(get_N_CA_C_list(file))
-        phi_total.extend(phi_list)
-        psi_total.extend(psi_list)
-    # plot
-    plt.scatter(phi_total, psi_total, s=1)
-    plt.xlabel('phi')
-    plt.ylabel('psi')
-    plt.title('Ramachandran Map')
-    plt.axhline(y=0, color='k', linestyle='-', linewidth=1)
-    plt.axvline(x=0, color='k', linestyle='-', linewidth=1)
-    plt.savefig(args.output)
+        # plot
+        plt.clf()
+        plt.scatter(phi_list, psi_list, s=1)
+        plt.xlabel('phi')
+        plt.ylabel('psi')
+        plt.title(f'{file[:4]} Ramachandran Map')
+        plt.axhline(y=0, color='k', linestyle='-', linewidth=1)
+        plt.axvline(x=0, color='k', linestyle='-', linewidth=1)
+        plt.savefig(f'{args.output}/{file[:4]}_Ramachandran_Map')

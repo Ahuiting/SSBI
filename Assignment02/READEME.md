@@ -6,4 +6,4 @@ import math
 import matplotlib.pyplot as plt
 
 
-try python3 Renschler-Sperl_Xu_ramachandran.py -i 5ire.pdb 1igt.pdb -o RamachandranMap.pdf
+try python3 Renschler-Sperl_Xu_ramachandran.py -i 5ire.pdb 1igt.pdb -o RamachandranMaps
