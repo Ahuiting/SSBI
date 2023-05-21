@@ -7,6 +7,27 @@ import seaborn as sns
 import matplotlib.pyplot as plt
 
 
+def get_residue_list(pdb_file):
+    parser = PDBParser()
+    structure = parser.get_structure(pdb_file[:4], pdb_file)
+
+    residue_list = []
+    for residue in structure[0].get_residues():
+        residue_id = residue.get_id()[1]
+        c_coords, o_coords, n_coords, h_coords = None, None, None, None
+        for atom in residue:
+            if atom.get_name() == "C":
+                c_coords = atom.get_coord()
+            elif atom.get_name() == "O":
+                o_coords = atom.get_coord()
+            elif atom.get_name() == "N":
+                n_coords = atom.get_coord()
+            elif atom.get_name() == "H":
+                h_coords = atom.get_coord()
+        residue_list.append((residue_id, c_coords, o_coords, n_coords, h_coords))
+    return residue_list
+
+
 def calculate_energy(c_coords, o_coords, n_coords, h_coords):
     q1 = 0.42 * elementary_charge
     q2 = 0.20 * elementary_charge
@@ -21,41 +42,25 @@ def calculate_energy(c_coords, o_coords, n_coords, h_coords):
 
 
 if __name__ == '__main__':
-    parser = PDBParser()
-    structure = parser.get_structure("5JXV", "5jxv.pdb")
+    residue_list=get_residue_list("5jxv.pdb")
 
-    residue_info = []
-    for residue in structure[0].get_residues():
-        residue_id = residue.get_id()[1]
-        c_coords, o_coords, n_coords, h_coords = None, None, None, None
-        for atom in residue:
-            if atom.get_name() == "C":
-                c_coords = atom.get_coord()
-            elif atom.get_name() == "O":
-                o_coords = atom.get_coord()
-            elif atom.get_name() == "N":
-                n_coords = atom.get_coord()
-            elif atom.get_name() == "H":
-                h_coords = atom.get_coord()
-        residue_info.append((residue_id, c_coords, o_coords, n_coords, h_coords))
-
-    matrix_size = len(residue_info)
+    matrix_size = len(residue_list)
     dssp_matrix = np.zeros([matrix_size, matrix_size])
     for i in range(matrix_size):
         for j in range(matrix_size):
             if i != j:
-                _, c_coords, o_coords, _, _ = residue_info[i]
-                _, _, _, n_coords, h_coords = residue_info[j]
-                energy = calculate_energy(c_coords, o_coords, n_coords, h_coords) * 100000000000000000
+                _, c_coords, o_coords, _, _ = residue_list[i]
+                _, _, _, n_coords, h_coords = residue_list[j]
+                energy = calculate_energy(c_coords, o_coords, n_coords, h_coords)
                 dssp_matrix[i][j] = energy
                 dssp_matrix[j][i] = energy
 
     df = pd.DataFrame(dssp_matrix)
-    df.index = [i[0] for i in residue_info]
-    df.to_csv("dssp_matrix.tsv", sep="\t", header=[i[0] for i in residue_info], index=True)
+    df.index = [i[0] for i in residue_list]
+    df.to_csv("dssp_matrix.tsv", sep="\t", header=[i[0] for i in residue_list], index=True)
 
-    sns.heatmap(dssp_matrix,vmin=sum(dssp_matrix.flatten()/56),vmax=sorted(dssp_matrix.flatten())[-1])
+    sns.heatmap(dssp_matrix, vmax=sum(dssp_matrix.flatten() / 56), vmin=sorted(dssp_matrix.flatten())[-1])
     plt.title("DSSP Energy Matrix")
     plt.xlabel("Residue Index j")
     plt.ylabel("Residue Index i")
-    plt.show()
+    plt.savefig("heatmap.png")
