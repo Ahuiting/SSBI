@@ -1,3 +1,4 @@
+# Author: Huiting Xu and Desirée Renschler-Sperl
 import numpy as np
 import pandas as pd
 from Bio.PDB import PDBParser
@@ -63,4 +64,4 @@ if __name__ == '__main__':
     plt.title("DSSP Energy Matrix")
     plt.xlabel("Residue Index j")
     plt.ylabel("Residue Index i")
-    plt.savefig("heatmap.png")
+    plt.savefig("Heatmap.png")
