@@ -54,7 +54,6 @@ if __name__ == '__main__':
                 _, _, _, n_coords, h_coords = residue_list[j]
                 energy = calculate_energy(c_coords, o_coords, n_coords, h_coords)
                 dssp_matrix[i][j] = energy
-                dssp_matrix[j][i] = energy
 
     df = pd.DataFrame(dssp_matrix)
     df.index = [i[0] for i in residue_list]
