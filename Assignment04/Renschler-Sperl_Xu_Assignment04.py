@@ -44,7 +44,6 @@ def calculate_energy(c_coords, o_coords, n_coords, h_coords):
 
 if __name__ == '__main__':
     residue_list=get_residue_list("5jxv.pdb")
-
     matrix_size = len(residue_list)
     dssp_matrix = np.zeros([matrix_size, matrix_size])
     for i in range(matrix_size):
