@@ -80,7 +80,7 @@ if __name__ == '__main__':
         if w_helix >= 4:
             start, end = extend_left_right(idx_a, idx_a + 6, p_a)
             helix_cores.extend(list(range(start, end + 1)))
-            idx_a = end # skip already found and extended ones while searching for cores
+            idx_a = idx_a + 6 # skip already found and extended ones while searching for cores
         idx_a += 1
     print('Helix cores: ',''.join(seq[i] if i in helix_cores else '-'for i in range(len(seq))))
     print('Helix: ',''.join('H' if i in helix_cores else '-' for i in range(len(seq))))
@@ -99,7 +99,7 @@ if __name__ == '__main__':
         if hb_count >= 3 and bb_count <= 1:
             start, end = extend_left_right(start, end, p_b)
             sheet_cores.extend(list(range(start, end + 1)))
-            idx_b = end # skip already found and extended ones while searching for cores
+            idx_b = idx_b + 5 # skip already found and extended ones while searching for cores
         idx_b += 1
     print('Sheet cores: ', ''.join(seq[i] if i in sheet_cores else '-' for i in range(len(seq))))
     print('Sheet: ',''.join('S' if i in sheet_cores else '-' for i in range(len(seq))))
