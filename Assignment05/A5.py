@@ -1,6 +1,8 @@
 import argparse
+import cmd
+
 import numpy as np
-from Bio import PDB
+from pymol import cmd
 
 
 def create_parser():
@@ -11,14 +13,22 @@ def create_parser():
 
 
 def calculate_rmsd(file1, file2):
-    parser = PDB.PDBParser()
-    file1_structure = parser.get_structure('file1', file1)
-    file2_structure = parser.get_structure('file2', file2)
 
-    file1_atoms = np.array([i.get_coord() for i in file1_structure.get_atoms()])
-    file2_atoms = np.array([i.get_coord() for i in file2_structure.get_atoms()])
+    cmd.load(file1)
+    cmd.load(file2)
 
-    rmsd = np.sqrt(np.mean(np.sum((file1_atoms - file2_atoms) ** 2, axis=1)))
+    cmd.align('5uo8', '6pp4', object='align')
+    alignment = cmd.get_raw_alignment("align")
+
+    atom_dist = []
+    for idx1, idx2 in alignment:
+        atom1_coord = np.array(cmd.get_coords(f'{idx1[0]} and id {idx1[1]}'), dtype=float).flatten()
+        atom2_coord = np.array(cmd.get_coords(f'{idx2[0]} and id {idx2[1]}'), dtype=float).flatten()
+        if len(atom1_coord) == 3 and len(atom2_coord) == 3:
+            dist = sum((atom1_coord[i] - atom2_coord[i]) ** 2 for i in range(len(atom1_coord)))
+            atom_dist.append(dist)
+
+    rmsd = np.sqrt(np.mean(atom_dist))
     return rmsd
 
 
