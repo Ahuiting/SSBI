@@ -1,3 +1,4 @@
 import argparse
+import cmd
 import numpy as np
-from Bio import PDB
+from pymol import cmd
