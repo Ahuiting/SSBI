@@ -5,6 +5,8 @@ import pandas as pd
 from Bio import SeqIO
 from re import findall as refindall
 from matplotlib import pyplot as plt
+from tabulate import tabulate
+
 
 def create_parser():
     p = argparse.ArgumentParser(description=__doc__,
@@ -93,23 +95,22 @@ def plot_intense_peaks(monoiso_mass):
     plt.show()
 
 
-
 def calculate_fragment_ions(peptide):
-    b_ions_masses = []
-    y_ions_masses = []
+    b_ions_masslist = []
+    y_ions_masslist = []
 
     for i in range(1, len(peptide)):
         # delete one O and one H
         OH_mass = 1.00783 + 15.9949
         b_ion_mass = calculate_masses(peptide[:i])[0] - OH_mass
-        b_ions_masses.append(b_ion_mass)
+        b_ions_masslist.append(('b'+str(i),b_ion_mass))
 
         # add one H
         H_mass = 1.00783
         y_ion_mass = calculate_masses(peptide[i:])[0] + H_mass
-        y_ions_masses.append(y_ion_mass)
+        y_ions_masslist.append(('y'+str(len(peptide)-i),y_ion_mass))
 
-    return b_ions_masses, y_ions_masses
+    return b_ions_masslist, y_ions_masslist
 
 
 def main(file):
@@ -143,9 +144,11 @@ def main(file):
 
     # task 3.3
     b_ions_mass, y_ions_mass = calculate_fragment_ions(peptide_seq)
-    b_ions_mass = [f'{ion:.2f}' for ion in b_ions_mass]
-    y_ions_mass = [f'{ion:.2f}' for ion in y_ions_mass]
-    print('b ions mass: ', '\t'.join(b_ions_mass), '\ny ions mass: ', '\t'.join(y_ions_mass))
+    b_ions_mass = [(i,f'{ion:.2f}') for i,ion in b_ions_mass]
+    y_ions_mass = [(i,f'{ion:.2f}') for i,ion in y_ions_mass]
+    print(tabulate(b_ions_mass, headers=['b ion', 'mass']))
+    print('\n')
+    print(tabulate(y_ions_mass, headers=['y ions', 'mass']))
 
 
 if __name__ == '__main__':
