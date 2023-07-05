@@ -27,9 +27,8 @@ def check_range(list, number):
     aa = []
     for i in range(0, len(list)):
         if abs(list[i] - number) <= 0.055 * 2:
-            #return list[i]
             aa.append(list[i])
-    if len(aa) != 0:
+    if aa:
         return aa
     else:
         return False
@@ -111,6 +110,7 @@ def main(filepath):
     print('\n'.join(all_possible_cases))
     with open('all_possible_peptides.txt', 'w') as f:
         f.write('\n'.join(all_possible_cases))
+
 
 
 
