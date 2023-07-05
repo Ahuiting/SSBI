@@ -24,10 +24,15 @@ def read_file(file_path):
 
 # check if the number is in the range of mass of amino acid,  if true, return the value, else False
 def check_range(list, number):
+    aa = []
     for i in range(0, len(list)):
         if abs(list[i] - number) <= 0.055 * 2:
-            return list[i]
-    return False
+            #return list[i]
+            aa.append(list[i])
+    if len(aa) != 0:
+        return aa
+    else:
+        return False
 
 
 # return the b_ions, y_ions indices of ion_list
@@ -65,7 +70,14 @@ def calculate_peptide(sublist, ion_list, mono_iso_dict):
     peptides = []
     for i in range(len(sublist) - 1):
         k = check_range(list(mono_iso_dict.keys()), ion_list[sublist[i + 1]] - ion_list[sublist[i]])
-        peptides.append(mono_iso_dict.get(k))
+        if len(k)==1:
+            peptides.append(mono_iso_dict.get(k[0]))
+        else:
+            aa=[]
+            for i in k:
+                aa.extend(mono_iso_dict.get(i))
+            peptides.append(aa)
+
     return peptides
 
 
@@ -99,6 +111,7 @@ def main(filepath):
     print('\n'.join(all_possible_cases))
     with open('all_possible_peptides.txt', 'w') as f:
         f.write('\n'.join(all_possible_cases))
+
 
 
 if __name__ == '__main__':
