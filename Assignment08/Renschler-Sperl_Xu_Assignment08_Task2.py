@@ -33,7 +33,7 @@ def main(path):
     print('----Task 2.3----')
     print(len(df[(df['prot_matches'] >= 2) & (df['prot_family_member'] == 1)]['prot_acc'].unique()))
     print('----Task 2.6----')
-    print(len(df[df['prot_family_member'] >= 1]['pep_seq'].unique()))
+    print(len(df[df['prot_family_member'] == 1]['pep_seq'].unique()))
 
 if __name__ == '__main__':
     args = create_parser()
